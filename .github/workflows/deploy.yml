@@ -32,7 +32,7 @@ jobs:
       - name: Copy Angular dist to Symfony public
         run: |
           rm -rf backend/public/assets backend/public/**.html backend/public/**.js backend/public/**.css
-          cp -r dist/* backend/public/
+          cp -r dist/*/browser/* backend/public/
 
       - name: Push to Fullstack Repo
         run: |
