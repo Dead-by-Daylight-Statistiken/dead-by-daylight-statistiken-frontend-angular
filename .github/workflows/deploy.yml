@@ -1,0 +1,46 @@
+name: Build and Deploy Full App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Angular Frontend
+        uses: actions/checkout@v4
+
+      - name: Checkout Symfony Backend
+        uses: actions/checkout@v4
+        with:
+          repository: Dead-by-Daylight-Statistiken/dead-by-daylight-statistiken-backend-php-symfony
+          path: backend
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install & Build Angular
+        run: |
+          npm ci
+          npm run build -- --configuration production
+
+      - name: Copy Angular dist to Symfony public
+        run: |
+          rm -rf backend/public/assets backend/public/**.html backend/public/**.js backend/public/**.css
+          cp -r dist/* backend/public/
+
+      - name: Push to Fullstack Repo
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/Dead-by-Daylight-Statistiken/dead-by-daylight-statistiken-fullstack.git out
+          rsync -av --delete --exclude=".git" ./backend/ out/
+          cd out
+          git add .
+          git commit -m "Deploy from 'dead-by-daylight-statistiken-frontend-angular' repo $GITHUB_SHA" || echo "No changes to commit"
+          git push
