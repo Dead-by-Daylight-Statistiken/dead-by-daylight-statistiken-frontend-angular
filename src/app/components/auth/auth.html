@@ -1,0 +1,9 @@
+@if (isLoggedIn()) {
+    <button (click)="logout()">
+        Logout
+    </button>
+} @else {
+    <button (click)="login()">
+        Login with Google
+    </button>
+}
